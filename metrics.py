@@ -10,7 +10,7 @@ class Metric():
         self.metric_method = metric_method
         self.nbins = nbins
         self.markov_mem = markov_mem  # Markov memory will influence stochastic kernel fitting, not here
-        self.metric_vals = nbins**(markov_mem+1)
+        self.n_vals = nbins**(markov_mem+1)
         self.partitions = None
     
     def fit(self, training_data: pd.DataFrame):
@@ -18,6 +18,8 @@ class Metric():
         historical_values = self.metric_method(training_data)
         quantiles = [(x+1)/self.nbins for x in [*range(self.nbins-1)]]
         self.partitions = historical_values.quantile(quantiles)['Price'].tolist()
+
+    # TODO: incorporate Markov memory here in get_val!!!!!!!!!!
 
     def get_val(self, data: pd.DataFrame):
         """Get the metric's latest value on given data."""
