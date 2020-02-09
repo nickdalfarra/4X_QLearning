@@ -1,11 +1,14 @@
-- make model_fitting.py produce transition probabilities for a list of metrics
-- implement Q-Learning on one of the stochastic kernels
+# TODO
 
-FIXME
-- ensure that all metrics are trained on the same data, and that the stochastic kernel is also
-    fit to this data
+- make reward function class or method (perhaps a reward.py module?)
+- make performance measurement class or methods (perhaps performance.py?)
+- make a Q-Learning module to integrate with existing code and perform testing (qlearning.py?)
 
-{COMPLETED:
-- make Dif2 metric child class
+- derive the stochastic kernel from training data
+    - make a kernel_fitting.py module?
 
-}
+- implement Q-Learning on a stochastic kernel from training data and financial data and compare
+    performance. This will allow us to verify whether or not our state space can meaningfully
+    predict the evolution of the stock market/asset behaviour.
+
+- use larger data sets for training (perhaps minute data!). See if more data improves performance.
