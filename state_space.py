@@ -10,7 +10,7 @@ class StateSpace():
     'metrics' is a list of Metric type objects."""
 
     def __init__(self, metric_list: list, training_data: pd.DataFrame):
-        """Automatically fit metrics and calculate stochastic kernel."""
+        """Automatically fit metrics."""
 
         # check to ensure metric list is a non-empty list
         if not isinstance(metric_list, list): 
@@ -25,8 +25,12 @@ class StateSpace():
 
         # make a list of all possible states, and enumerate them to map them to Q-Table values
         self.states = [*product(*[range(metric.n_vals) for metric in self.metric_list])]
-        backward_dict = dict(enumerate(self.states)) 
-        self.state_map = {y:x for x,y in backward_dict.items()} # input state
+        self.state_map = {y:x for x,y in dict(enumerate(self.states)).items()} # make a enumerated dictionary and reverse it
+
+        if len(self.metric_list) > 1:
+            self.pts_required = reduce(lambda a,b: max(a.markov_mem + a.pts_required, b.markov_mem + b.pts_required), self.metric_list)
+        else:
+            self.pts_required = self.metric_list[0].markov_memory + self.metric_list[0].pts_required
 
     def get_state(self, data: pd.DataFrame):
         """Calculate the state of the data at the bottom of a DataFrame."""
@@ -47,8 +51,8 @@ def main():
     testing_data = prices.tail(floor(len(prices)*(1-training_split)))
 
     # declare metrics
-    dif1 = Dif1(0, 5)       # markov memory of 1 (STILL YET TO BE IMPLEMENTED), 5 bins
-    dif2 = Dif2(0, 3)       # markov memory of 0 (STILL YET TO BE IMPLEMENTED), 3 bins
+    dif1 = Dif1(5, 1)       # markov memory of 1 (STILL YET TO BE IMPLEMENTED), 5 bins
+    dif2 = Dif2(3, 0)       # markov memory of 0 (STILL YET TO BE IMPLEMENTED), 3 bins
 
     X = StateSpace([dif1, dif2], training_data)
     # print(X)
@@ -56,8 +60,7 @@ def main():
     # print a bunch of states
     start = -400
     for point in range(start,start+25):
-        print(X.get_state(testing_data.iloc[point-3: point]) , end=', ')
-    print(" ")
+        print(X.get_state(testing_data.iloc[point-X.pts_required: point]) , end=', ')
 
 if __name__ == "__main__":
     main()
