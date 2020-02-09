@@ -8,18 +8,22 @@ class StateSpace():
     """States of the RL agent.
     'metrics' is a list of Metric type objects."""
 
-    def __init__(self, metrics: list):
+    def __init__(self, metric_list: list, training_data: pd.DataFrame):
 
-        if type(metrics) != "list": TypeError("metrics must be a list of Metric objects.")
-        if not metrics: raise ValueError("metric list must be non-empty.")
+        # check to ensure metric list is a non-empty list
+        if type(metric_list) != "list": 
+            raise TypeError("metrics must be a list of Metric objects.")
+        if not metric_list: 
+            raise ValueError("metric list must be non-empty.")
+        self.metric_list = metric_list
 
-        self.metrics = metrics
+        # fit the metrics to the training data
 
         # get properties of the state space
-        if len(metrics) > 1:
-            self.cardinality = reduce(lambda a,b : a.num_vals * b.num_vals, self.metrics)
-        elif len(metrics) == 1:
-            self.cardinality = metrics[0].num_vals
+        if len(metric_list) > 1:
+            self.cardinality = reduce(lambda a,b : a.metric_vals * b.metric_vals, self.metric_list)
+        elif len(metric_list) == 1:
+            self.cardinality = metric_list[0].metric_vals
             
     def __str__(self): return "State space of size " + str(self.cardinality)
 
@@ -30,10 +34,11 @@ def main():
     training_data = prices.head(ceil(len(prices)*training_split))
     # testing_data = prices.tail(floor(len(prices)*(1-training_split)))
 
-    dif1 = Dif1(1, 10, training_data)
-    dif2 = Dif2(0, 10, training_data)
 
-    X = StateSpace([dif1, dif2])
+    dif1 = Dif1(1, 10)
+    dif2 = Dif2(0, 10)
+    X = StateSpace([dif1, dif2], training_data)
+
     print(X)
 
 if __name__ == "__main__":

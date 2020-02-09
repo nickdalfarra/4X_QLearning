@@ -1,6 +1,10 @@
 - make model_fitting.py produce transition probabilities for a list of metrics
 - implement Q-Learning on one of the stochastic kernels
 
+FIXME
+- ensure that all metrics are trained on the same data, and that the stochastic kernel is also
+    fit to this data
+
 {COMPLETED:
 - make Dif2 metric child class
 
