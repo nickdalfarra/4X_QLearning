@@ -1,5 +1,7 @@
 # TODO
 
+- validate markov memory is working using simple examples
+
 - make reward function class or method (perhaps a reward.py module?)
 - make performance measurement class or methods (perhaps performance.py?)
 - make a Q-Learning module to integrate with existing code and perform testing (qlearning.py?)
