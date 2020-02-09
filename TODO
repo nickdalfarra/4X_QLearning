@@ -1,0 +1,7 @@
+- make model_fitting.py produce transition probabilities for a list of metrics
+- implement Q-Learning on one of the stochastic kernels
+
+{COMPLETED:
+- make Dif2 metric child class
+
+}
