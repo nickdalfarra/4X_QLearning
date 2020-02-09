@@ -37,8 +37,8 @@ def generate_action_space(m, n):
     return array(list(generate_list(m,n)))/n
 
 def main():
-    vehicles = 2
-    precision = 10
+    vehicles = 1
+    precision = 1000
     a_space = ActionSpace(vehicles, precision)
     print(a_space.actions)
     print(a_space.cardinality)
