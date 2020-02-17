@@ -39,9 +39,9 @@ def generate_action_space(m, n):
 def main():
     vehicles = 1
     precision = 1000
-    a_space = ActionSpace(vehicles, precision)
-    print(a_space.actions)
-    print(a_space.cardinality)
+    A = ActionSpace(vehicles, precision)
+    print(A.actions)
+    print(A.cardinality)
 
 if __name__ == "__main__":
     main()

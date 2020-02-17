@@ -1,4 +1,4 @@
-"""Metrics usable by the worker. Metrics must be given training data at initialization."""
+"""Metrics usable by the worker."""
 
 import pandas as pd
 from math import floor, ceil
@@ -23,15 +23,13 @@ class Metric():
         quantiles = [(x+1)/self.nbins for x in [*range(self.nbins-1)]]
         self.partitions = historical_values.quantile(quantiles)[historical_values.columns.values[0]].tolist()
 
-    # TODO: incorporate Markov memory here in get_val!!!!!!!!!!
-
     def get_val(self, data: pd.DataFrame):
         """Get the metric's latest value on given data."""
 
         if self.partitions is None:
             raise AttributeError("Metric must be fit to training data using the .fit() method.")
 
-        # get the sequence of metric values of length "markov_mem + 1"
+        # get a sequence of metric values of length "markov_mem + 1"
         val_sequence = []
         for i in range(self.markov_mem + 1):
             point = -1 - (self.pts_required + self.markov_mem - i)
@@ -45,8 +43,8 @@ class Metric():
 
             val_sequence.append(bin_num)
 
+        # return the metric's value 
         return self.markov_dict[tuple(val_sequence)]
-
 
 class Dif1(Metric):
     """Bins on the first difference distribution."""
@@ -68,6 +66,15 @@ class Dif2(Metric):
         """How the metric calculates values"""
         return training_data.diff().diff()
 
+class Price(Metric):
+    """Bins on the second difference distribution."""
+    def __init__(self, nbins: int, markov_mem: int):
+        pts_required = 1 # points required for the metric to be calculated
+        super().__init__(pts_required, self.price, nbins, markov_mem)
+
+    def price(self, training_data: pd.DataFrame):
+        """How the metric calculates values"""
+        return training_data
 
 def dif1_test():
     # prep data
@@ -78,7 +85,7 @@ def dif1_test():
 
     # create metric
     markov_memory = 2
-    bins = 3
+    bins = 100
     dif1 = Dif1(bins, markov_memory)
     dif1.fit(training_data)
 
@@ -95,7 +102,7 @@ def dif2_test():
     testing_data = prices.tail(floor(len(prices)*(1-training_split)))
 
     # create metric
-    markov_memory = 1
+    markov_memory = 0
     nbins = 10
     dif2 = Dif2(markov_memory, nbins)
     dif2.fit(training_data)
@@ -103,6 +110,13 @@ def dif2_test():
     sample_point = -125
     i = dif2.get_val(testing_data.iloc[sample_point-3:sample_point])
     print(i)
+
+# def price_test():
+#     # prep data
+#     prices = pd.read_csv('USD_CADHistoricalData.csv', header = 0, usecols = ['Price'])
+#     training_split = 0.8
+#     training_data = prices.head(ceil(len(prices)*training_split))
+#     testing_data = prices.tail(floor(len(prices)*(1-training_split)))
 
 if __name__ == '__main__':
     dif1_test()
