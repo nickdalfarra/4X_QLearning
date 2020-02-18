@@ -1,0 +1,21 @@
+STRENGTHS
+- model-free
+- effecient to train and execute
+- independent of emotion
+
+WEAKNESSES
+- "cheat sheet" approach (discrete, finite state and action spaces) 
+    forces the team to perform time-intensive feature engineering.
+- trade precision decreases as wealth increases
+- to improve trade precision, our agent must trade small enought amounts
+    (and must be uncommon enough) so that it does not influence the market
+- relies on local stationarity
+- cannot perform on-line training
+- cannot take advantage of market sentiments, completely impartial
+
+OPPORTUNITIES
+- make 
+- implement Q-Learning for trade execution, not trade deciding
+
+THREATS
+-

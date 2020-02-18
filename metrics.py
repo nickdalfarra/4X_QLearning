@@ -46,8 +46,18 @@ class Metric():
         # return the metric's value 
         return self.markov_dict[tuple(val_sequence)]
 
+class Price(Metric):
+    """Bins on the price distribution."""
+    def __init__(self, nbins: int, markov_mem: int):
+        pts_required = 1 # points required for the metric to be calculated
+        super().__init__(pts_required, self.price, nbins, markov_mem)
+
+    def price(self, training_data: pd.DataFrame):
+        """How the metric calculates values."""
+        return training_data
+
 class Dif1(Metric):
-    """Bins on the first difference distribution."""
+    """Bins on the first difference of the price distribution."""
     def __init__(self, nbins: int, markov_mem: int):
         pts_required = 2   # points required for the metric to be calculated
         super().__init__(pts_required, self.first_dif, nbins, markov_mem)
@@ -63,18 +73,8 @@ class Dif2(Metric):
         super().__init__(pts_required, self.second_dif, nbins, markov_mem)
 
     def second_dif(self, training_data: pd.DataFrame):
-        """How the metric calculates values"""
+        """How the metric calculates values."""
         return training_data.diff().diff()
-
-class Price(Metric):
-    """Bins on the second difference distribution."""
-    def __init__(self, nbins: int, markov_mem: int):
-        pts_required = 1 # points required for the metric to be calculated
-        super().__init__(pts_required, self.price, nbins, markov_mem)
-
-    def price(self, training_data: pd.DataFrame):
-        """How the metric calculates values"""
-        return training_data
 
 def dif1_test():
     # prep data
