@@ -4,7 +4,7 @@ from functools import reduce
 
 class ActionSpace():
     """Probibility mass functions with support on num_vehicles+1 points,
-    and a minimum allocation increment of 1/precision."""
+    and allocation increments of 1/precision."""
 
     def __init__(self, num_vehicles: int, precision: int):
         self.num_vehicles = num_vehicles + 1

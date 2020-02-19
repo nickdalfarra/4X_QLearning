@@ -25,12 +25,13 @@ class StateSpace():
 
         # make a list of all possible states, and enumerate them to map them to Q-Table values
         self.states = [*product(*[range(metric.n_vals) for metric in self.metric_list])]
+        self.cardinality = len(self.states) - 1
         self.state_map = {y:x for x,y in dict(enumerate(self.states)).items()} # make a enumerated dictionary and reverse it
 
         if len(self.metric_list) > 1:
             self.pts_required = reduce(lambda a,b: max(a.markov_mem + a.pts_required, b.markov_mem + b.pts_required), self.metric_list)
         else:
-            self.pts_required = self.metric_list[0].markov_memory + self.metric_list[0].pts_required
+            self.pts_required = self.metric_list[0].markov_mem + self.metric_list[0].pts_required
 
     def get_state(self, data: pd.DataFrame):
         """Calculate the state of the data at the bottom of a DataFrame."""
