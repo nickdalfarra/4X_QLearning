@@ -23,18 +23,18 @@ class Metric():
         quantiles = [(x+1)/self.nbins for x in [*range(self.nbins-1)]]
         self.partitions = historical_values.quantile(quantiles)[historical_values.columns.values[0]].tolist()
 
-    def get_val(self, data: pd.DataFrame):
+    def val(self, data: pd.DataFrame):
         """Get the metric's latest value on given data."""
 
         if self.partitions is None:
             raise AttributeError("Metric must be fit to training data using the .fit() method.")
 
-        # get a sequence of metric values of length "markov_mem + 1"
         val_sequence = []
-        for i in range(self.markov_mem + 1):
-            point = -1 - (self.pts_required + self.markov_mem - i)
-            metric_val = self.metric_method(data.iloc[point : point + self.pts_required])[data.columns.values[0]].iloc[-1]
-            # find the number of partitions to the left of the value
+        for i in range(self.markov_mem + 1): 
+            data_slice = data.iloc[len(data)- i - self.pts_required : len(data) - i]
+            metric_val = self.metric_method(data_slice)[data.columns.values[0]].iloc[-1]
+            
+            # find appropriate bin
             bin_num = 0
             while metric_val >= self.partitions[bin_num] and bin_num < len(self.partitions)-1: 
                 bin_num += 1
@@ -42,9 +42,9 @@ class Metric():
                 bin_num += 1 
 
             val_sequence.append(bin_num)
-
-        # return the metric's value 
+        
         return self.markov_dict[tuple(val_sequence)]
+
 
 class Price(Metric):
     """Bins on the price distribution."""
@@ -56,6 +56,7 @@ class Price(Metric):
         """How the metric calculates values."""
         return training_data
 
+
 class Dif1(Metric):
     """Bins on the first difference of the price distribution."""
     def __init__(self, nbins: int, markov_mem: int):
@@ -65,6 +66,7 @@ class Dif1(Metric):
     def first_dif(self, training_data: pd.DataFrame):
         """How the metric calculates values."""
         return training_data.diff()
+
 
 class Dif2(Metric):
     """Bins on the second difference distribution."""
@@ -76,48 +78,24 @@ class Dif2(Metric):
         """How the metric calculates values."""
         return training_data.diff().diff()
 
-def dif1_test():
+
+def metric_test(met: Metric):
     # prep data
-    prices = pd.read_csv('USD_CADHistoricalData.csv', header = 0, usecols = ['Price'])
+    prices = pd.read_csv('test_data.csv', header = 0, usecols = ['Price'])
     training_split = 0.8
     training_data = prices.head(ceil(len(prices)*training_split))
-    testing_data = prices.tail(floor(len(prices)*(1-training_split)))
+    # testing_data = prices.tail(floor(len(prices)*(1-training_split)))
+
+    del prices
 
     # create metric
-    markov_memory = 2
-    bins = 100
-    dif1 = Dif1(bins, markov_memory)
-    dif1.fit(training_data)
+    met.fit(training_data)
 
-    point = -98
-    i = dif1.get_val(testing_data.iloc[point - dif1.pts_required - dif1.markov_mem: point+1])
-    # print(dif1.markov_dict)
-    print(i)
+    # print(met.pts_required + met.markov_mem - 1)
+    # print(training_data.iloc[0 : met.pts_required + met.markov_mem ])
+    print(met.val(training_data.iloc[0 : met.pts_required + met.markov_mem ]))
 
-def dif2_test():
-    # prep data
-    prices = pd.read_csv('USD_CADHistoricalData.csv', header = 0, usecols = ['Price'])
-    training_split = 0.8
-    training_data = prices.head(ceil(len(prices)*training_split))
-    testing_data = prices.tail(floor(len(prices)*(1-training_split)))
-
-    # create metric
-    markov_memory = 0
-    nbins = 10
-    dif2 = Dif2(markov_memory, nbins)
-    dif2.fit(training_data)
-
-    sample_point = -125
-    i = dif2.get_val(testing_data.iloc[sample_point-3:sample_point])
-    print(i)
-
-# def price_test():
-#     # prep data
-#     prices = pd.read_csv('USD_CADHistoricalData.csv', header = 0, usecols = ['Price'])
-#     training_split = 0.8
-#     training_data = prices.head(ceil(len(prices)*training_split))
-#     testing_data = prices.tail(floor(len(prices)*(1-training_split)))
 
 if __name__ == '__main__':
-    dif1_test()
+    metric_test(Price(8, 1))
     

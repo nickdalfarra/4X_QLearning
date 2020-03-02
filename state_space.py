@@ -25,11 +25,14 @@ class StateSpace():
 
         # make a list of all possible states, and enumerate them to map them to Q-Table values
         self.states = [*product(*[range(metric.n_vals) for metric in self.metric_list])]
-        self.cardinality = len(self.states) - 1
+        self.cardinality = len(self.states)
         self.state_map = {y:x for x,y in dict(enumerate(self.states)).items()} # make a enumerated dictionary and reverse it
 
         if len(self.metric_list) > 1:
-            self.pts_required = reduce(lambda a,b: max(a.markov_mem + a.pts_required, b.markov_mem + b.pts_required), self.metric_list)
+            each_pts_required = []
+            for metric in self.metric_list:
+                each_pts_required.append(metric.markov_mem + metric.pts_required)
+            self.pts_required = max(each_pts_required)
         else:
             self.pts_required = self.metric_list[0].markov_mem + self.metric_list[0].pts_required
 
@@ -38,7 +41,7 @@ class StateSpace():
 
         metric_values = []
         for metric in self.metric_list:
-            metric_values.append(metric.get_val(data))
+            metric_values.append(metric.val(data))
 
         return self.state_map[tuple(metric_values)]
             
