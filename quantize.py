@@ -73,7 +73,7 @@ def centroid_condition(data: DataFrame, partitions: list):
 
 
 def lloyd_max(data: DataFrame, N: int, epsilon: float):
-    """Perform Lloyd-Max iterations to approach an optimal N-level quantizer."""
+    """Perform Lloyd-Max iterations. Returns partitions and codebook."""
 
     data = data.sort_values(by=['Price']) 
     
