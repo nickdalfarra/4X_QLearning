@@ -7,19 +7,21 @@ import itertools
 import numpy as np
 import datetime
 from random import randint
+import string
 
+#at the bottom i show how to call the markovchain class
+#uncomment all lines outside the class below the class 
 
 class MarkovChain:
     
-    def __init__(self, memory, binsnums, bins_labels):
-        #binsnums = binsnums
+    def __init__(self, memory, binsnums):
         binsnums = binsnums
-        bins_labels = bins_labels
+        bins_labels = MarkovChain.bins_label_list(binsnums)
+        print(bins_labels)
         memory = memory
         USDCAD_df = pd.read_csv('USD_CAD.csv')
         USDCAD_df['Date'] = pd.to_datetime(USDCAD_df['Date'])
         new_set = [] 
-        row_start = randint(0, len(USDCAD_df))
         market_subset = USDCAD_df.iloc[1:len(USDCAD_df)]
         Date = market_subset['Date']    
         Price_Gap = (market_subset['Price'] - market_subset['Price'].shift(1)) / market_subset['Price'].shift(1)
@@ -79,26 +81,33 @@ class MarkovChain:
                             if new_set_df.loc[j + k, 'Event_Pattern'] != newstuff[i][k]:
                                 current_count = 0
                     count += current_count
-                self.df.loc[a,''.join(newstuff[i])] = count / total_count.loc[''.join(newstuff[i]), 'count']
+                if total_count.loc[''.join(newstuff[i]), 'count'] != 0: self.df.loc[a,''.join(newstuff[i])] = count / total_count.loc[''.join(newstuff[i]), 'count']
         print(self.df.T)
         
+    def bins_label_list(binsnums):
+        bins_labels = []
+        for i in range(binsnums):
+            bins_labels.append(string.ascii_letters[i])
+        return bins_labels
+
 
     def table(self):
         table = self.df.T
         return table
+
     
-#    def probablity(self, event_pattern):
-#        row = self.df.loc[df['Event_Pattern'] == event_pattern)
-#        return row 
+
                
-mem = 1
-binsnums = 10
-bins_labels = ["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"]
+mem = 4
+binsnums = 4
 
-
-s = MarkovChain(mem, binsnums, bins_labels)
+s = MarkovChain(mem, binsnums)
 table = s.table()
 print(table)
-#row = s.probablity("A")
-print(row)
-print("done")
+#row = table.loc["aaaa" : "aaaa"]
+#topid = row.astype(float).idxmax(axis = 1)
+#top =  row.max(axis = 1 )
+#print(topid)
+#print(top)
+#print(row)
+#print("done")
