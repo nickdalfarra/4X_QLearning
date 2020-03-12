@@ -3,6 +3,7 @@
 import pandas as pd
 from math import floor, ceil
 from itertools import product
+from quantize import lloyd_max
 
 class Metric():
     """Base metric class."""
@@ -20,8 +21,7 @@ class Metric():
     def fit(self, training_data: pd.DataFrame):
         """Creates the partitions which define the metric mapping."""
         historical_values = self.metric_method(training_data)
-        quantiles = [(x+1)/self.nbins for x in [*range(self.nbins-1)]]
-        self.partitions = historical_values.quantile(quantiles)[historical_values.columns.values[0]].tolist()
+        self.partitions, _ = lloyd_max(historical_values, self.nbins, 0.0001)
 
     def val(self, data: pd.DataFrame):
         """Get the metric's latest value on given data."""
@@ -81,7 +81,7 @@ class Dif2(Metric):
 
 def metric_test(met: Metric):
     # prep data
-    prices = pd.read_csv('test_data.csv', header = 0, usecols = ['Price'])
+    prices = pd.read_csv('USD_CADHistoricalData.csv', header = 0, usecols = ['Price'])
     training_split = 0.8
     training_data = prices.head(ceil(len(prices)*training_split))
     # testing_data = prices.tail(floor(len(prices)*(1-training_split)))

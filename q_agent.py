@@ -53,10 +53,8 @@ class QAgent():
 
             prev_s_idx = s_idx
 
-    def trade(self, data: pd.DataFrame):
+    def trade(self, data: pd.DataFrame, wealth: float):
         """Excecute trades using argmax on the Q-table."""
-
-        growth = 1
 
         for n in range(self.X.pts_required+1, len(data)): # n is the data point
             # get current state
@@ -70,13 +68,13 @@ class QAgent():
             price = data.iloc[n].values[0]
             b = [1, price/prev_price]
 
-            growth *= float(np.dot(action, b))
+            wealth = float(np.dot(wealth * action, b))
         
-        return growth
+        return wealth
 
 
 
-def test_agent(metric_list: list):
+def test_agent(metric_list: list, actions: int):
     # prep data
     prices = pd.read_csv('USD_CADHistoricalData.csv', header = 0, usecols = ['Price'])
     training_split = 0.8
@@ -87,20 +85,19 @@ def test_agent(metric_list: list):
     X = StateSpace(metric_list, training_data)
     
     # create action space
-    A = ActionSpace(1, 100)
+    A = ActionSpace(1, actions)
 
     # create Q-Learning agent
-    gamma = 1 # discount factor (should this be zero? we assume transition prob is independent of action taken)
+    gamma = 0.5 # discount factor (should this be zero? we assume transition prob is independent of action taken)
     agent = QAgent(X, A, gamma, high_init = False)
 
     agent.train(training_data)
     print(agent.q_table)
-    growth = agent.trade(testing_data)
-    print(growth)
-    # print(np.mean(agent.q_table,1))
-    # print(agent.visitations)
 
-
+    wealth = 100
+    wealth = agent.trade(testing_data, wealth)
+    print(wealth)
+    
 
 if __name__ == "__main__":
-    test_agent([Price(2,0), Dif1(5,2)])
+    test_agent([Price(2,0), Dif1(5,2)], 100)
