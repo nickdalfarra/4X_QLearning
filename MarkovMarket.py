@@ -14,15 +14,17 @@ import string
 
 class MarkovChain:
     
-    def __init__(self, memory, binsnums):
+    def __init__(self, memory, binsnums, marketdata, metrictype):
         binsnums = binsnums
         bins_labels = MarkovChain.bins_label_list(binsnums)
-        print(bins_labels)
         memory = memory
-        USDCAD_df = pd.read_csv('USD_CAD.csv')
+        USDCAD_df_reverse = pd.read_csv(marketdata)
+        USDCAD_df = USDCAD_df_reverse.iloc[::-1]
         USDCAD_df['Date'] = pd.to_datetime(USDCAD_df['Date'])
         new_set = [] 
+        print(USDCAD_df)
         market_subset = USDCAD_df.iloc[1:len(USDCAD_df)]
+        Price = market_subset['Price']
         Date = market_subset['Date']    
         Price_Gap = (market_subset['Price'] - market_subset['Price'].shift(1)) / market_subset['Price'].shift(1)
         Open_Gap = market_subset['Open'].pct_change()
@@ -30,8 +32,8 @@ class MarkovChain:
         Low_Gap = market_subset['Low'].pct_change() 
         Daily_HiLow = (market_subset['High'] - market_subset['Low'])# / market_subset['Price']
         Outcome_Next_Day_Direction = (market_subset['Price'].shift(-1) - market_subset['Price'])
-        print(len(market_subset))
         new_set.append(pd.DataFrame({'Date': Date,
+                                    'Price': Price,
                                     'Price_Gap':Price_Gap,
                                     'High_Gap':High_Gap,
                                     'Low_Gap':Low_Gap,
@@ -39,17 +41,17 @@ class MarkovChain:
                                     'Outcome_Next_Day_Direction':Outcome_Next_Day_Direction
                                     }))
         new_set_df = pd.concat(new_set)
+        new_set_df.sort_values(by='Date', inplace = True, ascending=True)
         new_set_df = new_set_df.dropna(how='any') 
-        new_set_df['Price_Gap_LMH'] = pd.qcut(new_set_df['Price_Gap'], binsnums, labels = bins_labels)
+        new_set_df['MarkovMetric'] = pd.qcut(new_set_df[metrictype], binsnums, labels = bins_labels)
         # High_Gap - not used in this example
         #new_set_df['High_Gap_LMH'] = pd.qcut(new_set_df['High_Gap'], 3, labels=["L", "M", "H"])
         new_set_df['Next_Day_Outcome'] = new_set_df['Outcome_Next_Day_Direction']
         # new set
         new_set_df = new_set_df[["Date", 
-                         "Price_Gap_LMH", 
-                         #"High_Gap_LMH", 
+                         "MarkovMetric", 
                          "Next_Day_Outcome"]]
-        new_set_df['Event_Pattern'] = new_set_df['Price_Gap_LMH'].astype(str) #+ new_set_df['High_Gap_LMH'].astype(str) + new_set_df['Low_Gap_LMH'].astype(str) + new_set_df['Daily_HiLow_LMH'].astype(str)
+        new_set_df['Event_Pattern'] = new_set_df['MarkovMetric'].astype(str) #+ new_set_df['High_Gap_LMH'].astype(str) + new_set_df['Low_Gap_LMH'].astype(str) + new_set_df['Daily_HiLow_LMH'].astype(str)
         newstuff = []
         newstuff = list(itertools.product(bins_labels, repeat = memory))
         header = []
@@ -98,10 +100,11 @@ class MarkovChain:
     
 
                
-mem = 4
-binsnums = 4
-
-s = MarkovChain(mem, binsnums)
+mem = 1
+binsnums = 3
+marketdata = 'TESTING.csv'
+metrictype = 'Price'
+s = MarkovChain(mem, binsnums, marketdata, metrictype)
 table = s.table()
 print(table)
 #row = table.loc["aaaa" : "aaaa"]
